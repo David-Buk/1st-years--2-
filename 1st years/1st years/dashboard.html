@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="dashboard.css">
+    <title>Company Services Dashboard</title>
+</head>
+<body>
+    <div class="body">
+        
+        <header>
+            <h1>Midpoint Solutions Dashboard</h1>
+            <nav class="top-right-nav">
+                <ul>
+                    <li><a href="landingPage.html">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+                <div class="dropdown">
+                    <div class="hamburger dropbtn" onclick="toggleDropdown()">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="dropdown-content" id="dropdown">
+                        <a href="#category">Choose Category</a>
+                        <a href="landingPage.html">Logout</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="filter">
+                <label for="category">Select Category:</label>
+                <select id="category" onchange="filterCompanies()">
+                    <option value="all">All</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="technology">Technology</option>
+                    <option value="finance">Finance</option>
+                </select>
+            </div>
+
+            
+            <div class="search-bar">
+                <label for="search">Search Company:</label>
+                <input type="text" id="search" onkeyup="searchCompanies()" placeholder="Search for a company...">
+            </div>
+
+            <div class="company-list" id="company-list">
+                <div class="company" onclick="showDetails('Company A', 'Consulting', 'This is Company A. We provide consulting services.', '123-456-7890', 'images/companyA.jpg')">
+                    <h3>Company A</h3>
+                    <p>Consulting</p>
+                </div>
+                <div class="company" onclick="showDetails('Company B', 'Technology', 'This is Company B. We offer technology solutions.', '098-765-4321', 'images/companyB.jpg')">
+                    <h3>Company B</h3>
+                    <p>Technology</p>
+                </div>
+                <div class="company" onclick="showDetails('Company C', 'Finance', 'This is Company C. We specialize in financial services.', '111-222-3333', 'images/companyC.jpg')">
+                    <h3>Company C</h3>
+                    <p>Finance</p>
+                </div>
+                <div class="company" onclick="showDetails('Company D', 'Consulting', 'This is Company D. We offer strategic consulting.', '444-555-6666', 'images/companyD.jpg')">
+                    <h3>Company D</h3>
+                    <p>Consulting</p>
+                </div>
+            </div>
+
+            <div class="details" id="company-details">
+                <h2>Company Details</h2>
+                <img id="company-image" src="" alt="Company Image" style="max-width: 200px; display: none;">
+                <p id="description"></p>
+                <p><strong>Contact:</strong> <span id="contact"></span></p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Midpoint Solutions Dashboard</p>
+        </footer>
+    </div>
+
+    <script>
+        function showDetails(name, category, description, contact, imageUrl) {
+            document.getElementById('description').textContent = description;
+            document.getElementById('contact').textContent = contact;
+            
+            const imageElement = document.getElementById('company-image');
+            imageElement.src = imageUrl;
+            imageElement.style.display = 'block';
+
+            document.getElementById('company-details').style.display = 'block';
+        }
+
+        function filterCompanies() {
+            const category = document.getElementById('category').value;
+            const companies = document.querySelectorAll('.company');
+            
+            companies.forEach(company => {
+                if (category === 'all' || company.querySelector('p').textContent.toLowerCase() === category) {
+                    company.style.display = 'block';
+                } else {
+                    company.style.display = 'none';
+                }
+            });
+
+            document.getElementById('company-details').style.display = 'none';
+            document.getElementById('description').textContent = '';
+            document.getElementById('contact').textContent = '';
+            document.getElementById('company-image').style.display = 'none';
+        }
+
+        function searchCompanies() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const companies = document.querySelectorAll('.company');
+            
+            companies.forEach(company => {
+                const companyName = company.querySelector('h3').textContent.toLowerCase();
+                
+                if (companyName.includes(query)) {
+                    company.style.display = 'block';
+                } else {
+                    company.style.display = 'none';
+                }
+            });
+
+            document.getElementById('company-details').style.display = 'none';
+            document.getElementById('description').textContent = '';
+            document.getElementById('contact').textContent = '';
+            document.getElementById('company-image').style.display = 'none';
+        }
+
+        // Function to toggle the dropdown visibility
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.hamburger div')) {
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
