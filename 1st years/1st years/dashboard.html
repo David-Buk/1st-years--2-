@@ -1,153 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="dashboard.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Services Dashboard</title>
+    <style>
+        /* Card container styling */
+        .company-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px;
+        }
+
+        /* Individual company card styling */
+        .company-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 45%;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .company-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .company-card h3 {
+            margin: 10px 0;
+        }
+
+        .company-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .company-card .actions {
+            margin-top: 10px;
+        }
+
+        .company-card button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .company-card button:hover {
+            background-color: #45a049;
+        }
+
+        /* Logout button styling */
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
 </head>
+<!-- Use module imports for Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+    // Firebase configuration object
+    const firebaseConfig = {
+        apiKey: "AIzaSyCn1vJUh4BBtmf9oA1teCa1VrGbNdvl1NA",
+        authDomain: "smartgeekssolution2.firebaseapp.com",
+        projectId: "smartgeekssolution2",
+        storageBucket: "smartgeekssolution2.appspot.com",
+        messagingSenderId: "930577800406",
+        appId: "1:930577800406:web:01ff9647e3c826391abd77"
+    };
+
+    // Initialize Firebase and Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Load companies from Firestore and display them as cards
+    async function loadCompanies() {
+        const companiesSnapshot = await getDocs(collection(db, "companies"));
+        const companyList = document.getElementById('company-list');
+        companyList.innerHTML = ''; // Clear current list
+
+        companiesSnapshot.forEach(doc => {
+            const company = doc.data();
+            const companyId = doc.id;
+
+            // Create card for each company
+            const card = document.createElement('div');
+            card.className = 'company-card';
+            card.innerHTML = `
+                    <img src="${company.image}" alt="${company.name}">
+                    <h3>${company.name}</h3>
+                    <p><strong>Address:</strong> ${company.address}</p>
+                    <p><strong>Category:</strong> ${company.category}</p>
+                    <p><strong>Description:</strong> ${company.description}</p>
+                    <p><strong>Contact:</strong> ${company.contact}</p>
+                `;
+            companyList.appendChild(card);
+        });
+    }
+
+    // Filter companies by category
+    function filterCompanies() {
+        const category = document.getElementById('category').value.toLowerCase();
+        const companies = document.querySelectorAll('.company-card');
+
+        companies.forEach(company => {
+            const companyCategory = company.querySelector('p:nth-child(4)').textContent.toLowerCase();
+            company.style.display = (category === 'all' || companyCategory.includes(category)) ? '' : 'none';
+        });
+    }
+
+    // Search companies by name
+    function searchCompanies() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const companies = document.querySelectorAll('.company-card');
+
+        companies.forEach(company => {
+            const companyName = company.querySelector('h3').textContent.toLowerCase();
+            company.style.display = companyName.includes(query) ? '' : 'none';
+        });
+    }
+
+    // Function to handle user logout
+    function logout() {
+        signOut(auth).then(() => {
+            window.location.href = "landingPage.html"; // Redirect after logout
+        }).catch((error) => {
+            console.error("Error signing out:", error);
+        });
+    }
+
+    // Load companies on page load
+    window.onload = loadCompanies;
+    // Function to handle user logout
+    window.logout = function () {
+        signOut(auth).then(() => {
+            window.location.href = "landingPage.html"; // Redirect after logout
+        }).catch((error) => {
+            console.error("Error signing out:", error);
+        });
+    };
+
+</script>
+
 <body>
-    <div class="body">
-        
-        <header>
-            <h1>Midpoint Solutions Dashboard</h1>
-            <nav class="top-right-nav">
-                <ul>
-                    <li><a href="landingPage.html">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
-                </ul>
-                <div class="dropdown">
-                    <div class="hamburger dropbtn" onclick="toggleDropdown()">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                    <div class="dropdown-content" id="dropdown">
-                        <a href="#category">Choose Category</a>
-                        <a href="landingPage.html">Logout</a>
-                    </div>
-                </div>
-            </nav>
-        </header>
 
-        <main>
-            <div class="filter">
-                <label for="category">Select Category:</label>
-                <select id="category" onchange="filterCompanies()">
-                    <option value="all">All</option>
-                    <option value="consulting">Consulting</option>
-                    <option value="technology">Technology</option>
-                    <option value="finance">Finance</option>
-                </select>
-            </div>
+    <header>
+        <h1>Midpoint Solutions Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="landingPage.html">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+            <div><button class="logout-btn" onclick="logout()">Logout</button></div>
+        </nav>
+    </header>
 
-            
-            <div class="search-bar">
-                <label for="search">Search Company:</label>
-                <input type="text" id="search" onkeyup="searchCompanies()" placeholder="Search for a company...">
-            </div>
-
-            <div class="company-list" id="company-list">
-                <div class="company" onclick="showDetails('Company A', 'Consulting', 'This is Company A. We provide consulting services.', '123-456-7890', 'images/companyA.jpg')">
-                    <h3>Company A</h3>
-                    <p>Consulting</p>
-                </div>
-                <div class="company" onclick="showDetails('Company B', 'Technology', 'This is Company B. We offer technology solutions.', '098-765-4321', 'images/companyB.jpg')">
-                    <h3>Company B</h3>
-                    <p>Technology</p>
-                </div>
-                <div class="company" onclick="showDetails('Company C', 'Finance', 'This is Company C. We specialize in financial services.', '111-222-3333', 'images/companyC.jpg')">
-                    <h3>Company C</h3>
-                    <p>Finance</p>
-                </div>
-                <div class="company" onclick="showDetails('Company D', 'Consulting', 'This is Company D. We offer strategic consulting.', '444-555-6666', 'images/companyD.jpg')">
-                    <h3>Company D</h3>
-                    <p>Consulting</p>
-                </div>
-            </div>
-
-            <div class="details" id="company-details">
-                <h2>Company Details</h2>
-                <img id="company-image" src="" alt="Company Image" style="max-width: 200px; display: none;">
-                <p id="description"></p>
-                <p><strong>Contact:</strong> <span id="contact"></span></p>
-            </div>
-        </main>
-
-        <footer>
-            <p>&copy; 2024 Midpoint Solutions Dashboard</p>
-        </footer>
+    <div class="filter">
+        <label for="category">Select Category:</label>
+        <select id="category" onchange="filterCompanies()">
+            <option value="all">All</option>
+            <option value="consulting">Consulting</option>
+            <option value="technology">Technology</option>
+            <option value="finance">Finance</option>
+        </select>
     </div>
 
-    <script>
-        function showDetails(name, category, description, contact, imageUrl) {
-            document.getElementById('description').textContent = description;
-            document.getElementById('contact').textContent = contact;
-            
-            const imageElement = document.getElementById('company-image');
-            imageElement.src = imageUrl;
-            imageElement.style.display = 'block';
+    <div class="search-bar">
+        <label for="search">Search Company:</label>
+        <input type="text" id="search" onkeyup="searchCompanies()" placeholder="Search for a company...">
+    </div>
 
-            document.getElementById('company-details').style.display = 'block';
-        }
+    <div class="company-list" id="company-list">
+        <!-- Company cards will be dynamically inserted here -->
+    </div>
 
-        function filterCompanies() {
-            const category = document.getElementById('category').value;
-            const companies = document.querySelectorAll('.company');
-            
-            companies.forEach(company => {
-                if (category === 'all' || company.querySelector('p').textContent.toLowerCase() === category) {
-                    company.style.display = 'block';
-                } else {
-                    company.style.display = 'none';
-                }
-            });
+    <footer>
+        <p>&copy; 2024 Midpoint Solutions Dashboard</p>
+    </footer>
 
-            document.getElementById('company-details').style.display = 'none';
-            document.getElementById('description').textContent = '';
-            document.getElementById('contact').textContent = '';
-            document.getElementById('company-image').style.display = 'none';
-        }
 
-        function searchCompanies() {
-            const query = document.getElementById('search').value.toLowerCase();
-            const companies = document.querySelectorAll('.company');
-            
-            companies.forEach(company => {
-                const companyName = company.querySelector('h3').textContent.toLowerCase();
-                
-                if (companyName.includes(query)) {
-                    company.style.display = 'block';
-                } else {
-                    company.style.display = 'none';
-                }
-            });
-
-            document.getElementById('company-details').style.display = 'none';
-            document.getElementById('description').textContent = '';
-            document.getElementById('contact').textContent = '';
-            document.getElementById('company-image').style.display = 'none';
-        }
-
-        // Function to toggle the dropdown visibility
-        function toggleDropdown() {
-            const dropdown = document.getElementById('dropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
-            if (!event.target.matches('.hamburger div')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
-            }
-        }
-    </script>
 </body>
+
 </html>
